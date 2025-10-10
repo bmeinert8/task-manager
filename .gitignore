@@ -1,0 +1,3 @@
+node_modules/
+.funcignore
+local.settings.json
