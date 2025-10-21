@@ -1,43 +1,54 @@
 const { BlobServiceClient } = require('@azure/storage-blob');
 
-module.exports = async function (context, req) {
+module.exports = async function (context) {
   try {
-    // Initialize BlobServiceClient with connection string
     const connectionString = process.env.AzureWebJobsStorage;
     const blobServiceClient =
       BlobServiceClient.fromConnectionString(connectionString);
     const containerClient = blobServiceClient.getContainerClient('tasks');
     const blobClient = containerClient.getBlockBlobClient('tasks.json');
 
-    // Try to download tasks.json
+    let tasks = [];
     try {
       const downloadResponse = await blobClient.download();
       const tasksJson = await streamToText(downloadResponse.readableStreamBody);
-      const tasks = JSON.parse(tasksJson || '[]');
-      context.res = {
-        status: 200,
-        body: tasks,
-      };
+      tasks = JSON.parse(tasksJson || '[]');
     } catch (error) {
       if (error.statusCode === 404) {
-        // Blob doesn't exist yet, return empty array
         context.res = {
           status: 200,
+          headers: {
+            'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+            'Access-Control-Allow-Methods': 'GET,OPTIONS',
+            'Access-Control-Max-Age': '86400',
+          },
           body: [],
         };
-      } else {
-        throw error; // Rethrow other errors
+        return;
       }
+      throw error;
     }
+
+    context.res = {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+        'Access-Control-Allow-Methods': 'GET,OPTIONS',
+        'Access-Control-Max-Age': '86400',
+      },
+      body: tasks,
+    };
   } catch (error) {
     context.res = {
       status: 500,
-      body: `Error fetching tasks: ${error.message}`,
+      headers: {
+        'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+      },
+      body: `Error retrieving tasks: ${error.message}`,
     };
   }
 };
 
-// Helper function to convert stream to text
 async function streamToText(readable) {
   readable.setEncoding('utf8');
   let data = '';

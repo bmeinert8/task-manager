@@ -1,5 +1,5 @@
 // Retrieve data from local storage or create an empty array
-let todos = JSON.parse(localStorage.getItem('todo')) || [];
+let todos = [];
 
 // Create variables for the input field, add button, counter, todo list, and priority checkbox
 const tdInput = document.getElementById('tdInput');
@@ -10,7 +10,19 @@ const deleteButton = document.querySelector('.btnDel');
 const priorityCheckbox = document.getElementById('priorityCheckbox');
 
 // Add event listener to the document
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const response = await fetch('http://localhost:7071/api/getTasks');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    todos = await response.json();
+    displayTasks();
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    todos = []; // Fallback to empty array
+    displayTasks();
+  }
   // Add event listener to the add button whenever it is clicked
   addButton.addEventListener('click', addTask);
   // Add event listener to the input field whenever a key is pressed
@@ -21,45 +33,44 @@ document.addEventListener('DOMContentLoaded', () => {
       addTask();
     }
   });
-  // Display the tasks
-  displayTasks();
   // Add event listener to the delete button whenever it is clicked
   deleteButton.addEventListener('click', deleteAll);
 });
 
 // Add task function
-const addTask = () => {
-  // Create a new task variable and assign the value of the input field to it after trimming it
+const addTask = async () => {
   const newTask = tdInput.value.trim();
-  // If the input field is empty, alert the user to enter a task
   if (newTask === '') {
     alert('Please enter a task');
     return;
-  } else {
-    // Get current date in YYYY-MM-DD format
-    const currentDate = new Date().toISOString().split('T')[0];
-    // Push the new task to the todos array with priority and createdDate
-    todos.push({
-      text: newTask,
-      disabled: false,
-      priority: priorityCheckbox.checked, // Set priority to true if checked, false otherwise
-      createdDate: currentDate, // Auto-add creation date
-    });
-    // Reset the priority checkbox after adding
-    priorityCheckbox.checked = false;
-    // Save to local storage
-    saveToLocalStorage();
-    // Clear the input field
-    tdInput.value = '';
-    // Display the tasks
-    displayTasks();
   }
-};
 
-// Save to local storage function
-const saveToLocalStorage = () => {
-  // Save the todos array to local storage by converting the javascript object to a string
-  localStorage.setItem('todo', JSON.stringify(todos));
+  try {
+    const response = await fetch('http://localhost:7071/api/addTask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: newTask,
+        priority: priorityCheckbox.checked,
+        createdDate: new Date().toISOString().split('T')[0],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    priorityCheckbox.checked = false;
+    tdInput.value = '';
+    const responseData = await response.json();
+    todos.push(responseData);
+    displayTasks();
+  } catch (error) {
+    console.error('Error adding task:', error);
+    alert('Failed to add task. Please try again.');
+  }
 };
 
 // Display tasks function
@@ -117,8 +128,6 @@ const displayTasks = () => {
     p.querySelector('.deleteIcon').addEventListener('click', () => {
       // Remove the task from the todos array
       todos.splice(todos.indexOf(item), 1);
-      // Save to local storage
-      saveToLocalStorage();
       // Re-render the task list
       displayTasks();
     });
@@ -155,8 +164,6 @@ const displayTasks = () => {
     p.querySelector('.deleteIcon').addEventListener('click', () => {
       // Remove the task from the todos array
       todos.splice(todos.indexOf(item), 1);
-      // Save to local storage
-      saveToLocalStorage();
       // Re-render the task list
       displayTasks();
     });
@@ -173,8 +180,6 @@ const displayTasks = () => {
 const toggleTask = (index) => {
   // Toggle the status of the task
   todos[index].disabled = !todos[index].disabled;
-  // Save to local storage
-  saveToLocalStorage();
   // Display the tasks
   displayTasks();
 };
@@ -183,8 +188,6 @@ const toggleTask = (index) => {
 const deleteAll = () => {
   // Clear the todos array
   todos = [];
-  // Save to local storage
-  saveToLocalStorage();
   // Display the tasks
   displayTasks();
 };
