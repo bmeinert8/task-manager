@@ -2,25 +2,38 @@ const { BlobServiceClient } = require('@azure/storage-blob');
 const { randomUUID } = require('crypto');
 
 module.exports = async function (context, req) {
+  if (req.method === 'OPTIONS') {
+    context.res = {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+        'Access-Control-Allow-Methods': 'POST,OPTIONS',
+        'Access-Control-Max-Age': '86400',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    };
+    return;
+  }
+
   try {
-    // Validate request body
     const newTask = req.body;
     if (!newTask || !newTask.text || typeof newTask.text !== 'string') {
       context.res = {
         status: 400,
+        headers: {
+          'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+        },
         body: 'Invalid task: text is required and must be a string',
       };
       return;
     }
 
-    // Initialize BlobServiceClient
     const connectionString = process.env.AzureWebJobsStorage;
     const blobServiceClient =
       BlobServiceClient.fromConnectionString(connectionString);
     const containerClient = blobServiceClient.getContainerClient('tasks');
     const blobClient = containerClient.getBlockBlobClient('tasks.json');
 
-    // Read existing tasks
     let tasks = [];
     try {
       const downloadResponse = await blobClient.download();
@@ -28,14 +41,12 @@ module.exports = async function (context, req) {
       tasks = JSON.parse(tasksJson || '[]');
     } catch (error) {
       if (error.statusCode !== 404) {
-        throw error; // Rethrow non-404 errors
+        throw error;
       }
-      // 404 means no tasks.json yet, start with empty array
     }
 
-    // Add new task with ID and defaults
     const task = {
-      id: randomUUID(), // Generate unique ID
+      id: randomUUID(),
       text: newTask.text,
       disabled: newTask.disabled || false,
       priority: newTask.priority || false,
@@ -44,25 +55,30 @@ module.exports = async function (context, req) {
     };
     tasks.push(task);
 
-    // Convert tasks to JSON string and upload
     const tasksJson = JSON.stringify(tasks);
+    context.log('Uploading tasks:', tasksJson);
     await blobClient.uploadData(Buffer.from(tasksJson), {
       blobHTTPHeaders: { blobContentType: 'application/json' },
     });
 
     context.res = {
       status: 201,
-      body: task, // Return the added task
+      headers: {
+        'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+      },
+      body: task,
     };
   } catch (error) {
     context.res = {
       status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+      },
       body: `Error adding task: ${error.message}`,
     };
   }
 };
 
-// Helper function to convert stream to text
 async function streamToText(readable) {
   readable.setEncoding('utf8');
   let data = '';

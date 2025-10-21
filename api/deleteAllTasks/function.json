@@ -6,19 +6,12 @@
       "direction": "in",
       "name": "req",
       "methods": ["delete", "options"],
-      "route": "deleteTask/{id}"
+      "route": "deleteAllTasks"
     },
     {
       "type": "http",
       "direction": "out",
       "name": "res"
-    },
-    {
-      "type": "blob",
-      "direction": "in",
-      "name": "tasksBlob",
-      "path": "tasks/tasks.json",
-      "connection": "AzureWebJobsStorage"
     }
   ]
 }
