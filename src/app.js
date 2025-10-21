@@ -177,11 +177,34 @@ const displayTasks = () => {
 };
 
 // Toggle task function to change the status of the task from disabled = false to disabled = true
-const toggleTask = (index) => {
-  // Toggle the status of the task
-  todos[index].disabled = !todos[index].disabled;
-  // Display the tasks
-  displayTasks();
+const toggleTask = async (index) => {
+  try {
+    const task = todos[index];
+    const updatedDisabled = !task.disabled;
+    const response = await fetch(
+      `http://localhost:7071/api/updateTask/${task.id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          disabled: updatedDisabled,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const updatedTask = await response.json();
+    todos[index] = updatedTask;
+    displayTasks();
+  } catch (error) {
+    console.error('Error toggling task:', error);
+    alert('Failed to toggle task. Please try again.');
+  }
 };
 
 // Delete all tasks function
