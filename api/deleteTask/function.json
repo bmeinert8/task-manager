@@ -5,7 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["delete"],
+      "methods": ["delete", "options"],
       "route": "deleteTask/{id}"
     },
     {

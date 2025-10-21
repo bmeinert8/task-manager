@@ -75,104 +75,74 @@ const addTask = async () => {
 
 // Display tasks function
 const displayTasks = () => {
-  // Split tasks into active and completed
   const activeTasks = todos.filter((item) => !item.disabled);
   const completedTasks = todos.filter((item) => item.disabled);
 
-  // Sort function: priority true first, then oldest createdDate
   const sortTasks = (tasks) =>
     tasks.sort((a, b) => {
-      // Handle missing createdDate (backward compatibility)
       const dateA = a.createdDate || '0000-01-01';
       const dateB = b.createdDate || '0000-01-01';
-      // Priority true (1) before false (0)
       if (a.priority !== b.priority) {
         return b.priority - a.priority;
       }
-      // Within same priority, oldest createdDate first
       return new Date(dateA) - new Date(dateB);
     });
 
-  // Sort both groups
   sortTasks(activeTasks);
   sortTasks(completedTasks);
 
-  // Clear the todoList element
   todoList.innerHTML = '';
 
-  // Render active tasks first
   activeTasks.forEach((item, index) => {
-    // Create a new paragraph element
     const p = document.createElement('p');
     p.classList.add('todo');
-    // Set the inner HTML of the paragraph element
     p.innerHTML = `
-      <div class="todoContainer">
-        <input type="checkbox" class="todoCheckbox" id="input-${index}" ${
+            <div class="todoContainer">
+                <input type="checkbox" class="todoCheckbox" id="input-${index}" ${
       item.disabled ? 'checked' : ''
     }>
-        <p id="todo-${index}" class="${item.disabled ? 'disabled ' : ''}${
-      item.priority ? 'priorityTask' : ''
-    }">${item.text}</p>
-        <img src="./images/delete.svg" alt="delete" class="deleteIcon"> 
-      </div>
-    `;
-
-    // Add event listener to the checkbox to toggle the task
-    p.querySelector('.todoCheckbox').addEventListener(
-      'change',
-      () => toggleTask(todos.indexOf(item)) // Use global index for todos array
-    );
-
-    // Add event listener to the delete icon to delete the task
-    p.querySelector('.deleteIcon').addEventListener('click', () => {
-      // Remove the task from the todos array
-      todos.splice(todos.indexOf(item), 1);
-      // Re-render the task list
-      displayTasks();
-    });
-
-    // Append the paragraph element to the todoList
-    todoList.appendChild(p);
-  });
-
-  // Render completed tasks at the bottom
-  completedTasks.forEach((item, index) => {
-    // Create a new paragraph element
-    const p = document.createElement('p');
-    p.classList.add('todo');
-    // Set the inner HTML of the paragraph element
-    p.innerHTML = `
-      <div class="todoContainer">
-        <input type="checkbox" class="todoCheckbox" id="input-completed-${index}" ${
-      item.disabled ? 'checked' : ''
-    }>
-        <p id="todo-completed-${index}" class="${
+                <p id="todo-${index}" class="${
       item.disabled ? 'disabled ' : ''
     }${item.priority ? 'priorityTask' : ''}">${item.text}</p>
-        <img src="./images/delete.svg" alt="delete" class="deleteIcon"> 
-      </div>
-    `;
+                <img src="./images/delete.svg" alt="delete" class="deleteIcon">
+            </div>
+        `;
 
-    // Add event listener to the checkbox to toggle the task
-    p.querySelector('.todoCheckbox').addEventListener(
-      'change',
-      () => toggleTask(todos.indexOf(item)) // Use global index for todos array
+    p.querySelector('.todoCheckbox').addEventListener('change', () =>
+      toggleTask(todos.indexOf(item))
+    );
+    p.querySelector('.deleteIcon').addEventListener('click', () =>
+      deleteTask(todos.indexOf(item))
     );
 
-    // Add event listener to the delete icon to delete the task
-    p.querySelector('.deleteIcon').addEventListener('click', () => {
-      // Remove the task from the todos array
-      todos.splice(todos.indexOf(item), 1);
-      // Re-render the task list
-      displayTasks();
-    });
-
-    // Append the paragraph element to the todoList
     todoList.appendChild(p);
   });
 
-  // Update the counter to show active tasks
+  completedTasks.forEach((item, index) => {
+    const p = document.createElement('p');
+    p.classList.add('todo');
+    p.innerHTML = `
+            <div class="todoContainer">
+                <input type="checkbox" class="todoCheckbox" id="input-completed-${index}" ${
+      item.disabled ? 'checked' : ''
+    }>
+                <p id="todo-completed-${index}" class="${
+      item.disabled ? 'disabled ' : ''
+    }${item.priority ? 'priorityTask' : ''}">${item.text}</p>
+                <img src="./images/delete.svg" alt="delete" class="deleteIcon">
+            </div>
+        `;
+
+    p.querySelector('.todoCheckbox').addEventListener('change', () =>
+      toggleTask(todos.indexOf(item))
+    );
+    p.querySelector('.deleteIcon').addEventListener('click', () =>
+      deleteTask(todos.indexOf(item))
+    );
+
+    todoList.appendChild(p);
+  });
+
   counter.textContent = activeTasks.length;
 };
 
@@ -204,6 +174,31 @@ const toggleTask = async (index) => {
   } catch (error) {
     console.error('Error toggling task:', error);
     alert('Failed to toggle task. Please try again.');
+  }
+};
+
+const deleteTask = async (index) => {
+  try {
+    const task = todos[index];
+    const response = await fetch(
+      `http://localhost:7071/api/deleteTask/${task.id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    todos.splice(index, 1);
+    displayTasks();
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    alert('Failed to delete task. Please try again.');
   }
 };
 
