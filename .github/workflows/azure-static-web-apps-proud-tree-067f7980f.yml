@@ -18,16 +18,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-          lfs: false
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }} # save the deployment token in GitHub Secrets
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for GitHub integrations (i.e., sources location)
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/src" # App source code path relative to repository root
-          api_location: "/api" # API source code path relative to repository root - optional
-          output_location: "" # Built app content directory - optional
+          app_location: "/src" # Frontend files in src/
+          api_location: "" # No API in this repo (Functions deployed separately)
+          output_location: "" # No build step needed for static HTML/JS
+          skip_app_build: true # Skip Oryx build for frontend
+          skip_api_build: true # Skip API build
         env:
           DEPLOYMENT_BRANCH: main
