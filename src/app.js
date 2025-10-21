@@ -203,9 +203,23 @@ const deleteTask = async (index) => {
 };
 
 // Delete all tasks function
-const deleteAll = () => {
-  // Clear the todos array
-  todos = [];
-  // Display the tasks
-  displayTasks();
+const deleteAll = async () => {
+  try {
+    const response = await fetch('http://localhost:7071/api/deleteAllTasks', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    todos = [];
+    displayTasks();
+  } catch (error) {
+    console.error('Error deleting all tasks:', error);
+    alert('Failed to delete all tasks. Please try again.');
+  }
 };
