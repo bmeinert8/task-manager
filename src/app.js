@@ -12,7 +12,9 @@ const priorityCheckbox = document.getElementById('priorityCheckbox');
 // Add event listener to the document
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const response = await fetch('http://localhost:7071/api/getTasks');
+    const response = await fetch(
+      'https://task-manager-func-bmeinert.azurewebsites.net/api/getTasks'
+    );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -46,17 +48,20 @@ const addTask = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:7071/api/addTask', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: newTask,
-        priority: priorityCheckbox.checked,
-        createdDate: new Date().toISOString().split('T')[0],
-      }),
-    });
+    const response = await fetch(
+      'https://task-manager-func-bmeinert.azurewebsites.net/api/addTask',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: newTask,
+          priority: priorityCheckbox.checked,
+          createdDate: new Date().toISOString().split('T')[0],
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -152,7 +157,7 @@ const toggleTask = async (index) => {
     const task = todos[index];
     const updatedDisabled = !task.disabled;
     const response = await fetch(
-      `http://localhost:7071/api/updateTask/${task.id}`,
+      `https://task-manager-func-bmeinert.azurewebsites.net/api/updateTask/${task.id}`,
       {
         method: 'PUT',
         headers: {
@@ -181,7 +186,7 @@ const deleteTask = async (index) => {
   try {
     const task = todos[index];
     const response = await fetch(
-      `http://localhost:7071/api/deleteTask/${task.id}`,
+      `https://task-manager-func-bmeinert.azurewebsites.net/api/deleteTask/${task.id}`,
       {
         method: 'DELETE',
         headers: {
@@ -205,12 +210,15 @@ const deleteTask = async (index) => {
 // Delete all tasks function
 const deleteAll = async () => {
   try {
-    const response = await fetch('http://localhost:7071/api/deleteAllTasks', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(
+      'https://task-manager-func-bmeinert.azurewebsites.net/api/deleteAllTasks',
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
