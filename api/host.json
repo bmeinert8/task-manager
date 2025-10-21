@@ -10,6 +10,7 @@
           "https://proud-tree-067f7980f.1.azurestaticapps.net"
         ],
         "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allowCredentials": false,
         "maxAge": 86400
       }
     }

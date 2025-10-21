@@ -5,7 +5,8 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: {
-        'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+        'Access-Control-Allow-Origin':
+          'https://proud-tree-067f7980f.1.azurestaticapps.net',
         'Access-Control-Allow-Methods': 'DELETE,OPTIONS',
         'Access-Control-Max-Age': '86400',
         'Access-Control-Allow-Headers': 'Content-Type',
@@ -21,7 +22,6 @@ module.exports = async function (context, req) {
     const containerClient = blobServiceClient.getContainerClient('tasks');
     const blobClient = containerClient.getBlockBlobClient('tasks.json');
 
-    // Overwrite tasks.json with an empty array
     const tasksJson = JSON.stringify([]);
     context.log('Clearing all tasks');
     await blobClient.uploadData(Buffer.from(tasksJson), {
@@ -31,7 +31,8 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: {
-        'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+        'Access-Control-Allow-Origin':
+          'https://proud-tree-067f7980f.1.azurestaticapps.net',
       },
       body: 'All tasks deleted successfully',
     };
@@ -39,7 +40,8 @@ module.exports = async function (context, req) {
     context.res = {
       status: 500,
       headers: {
-        'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+        'Access-Control-Allow-Origin':
+          'https://proud-tree-067f7980f.1.azurestaticapps.net',
       },
       body: `Error deleting all tasks: ${error.message}`,
     };
