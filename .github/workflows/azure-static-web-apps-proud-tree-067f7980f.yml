@@ -26,9 +26,9 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/src" # Frontend files in src/
-          api_location: "" # No API in this repo (Functions deployed separately)
+          api_location: "api" # API Functions in api/ folder
           output_location: "" # No build step needed for static HTML/JS
           skip_app_build: true # Skip Oryx build for frontend
-          skip_api_build: true # Skip API build
+          skip_api_build: false # Enable API build for Functions
         env:
           DEPLOYMENT_BRANCH: main
