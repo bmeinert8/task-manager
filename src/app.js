@@ -12,9 +12,8 @@ const priorityCheckbox = document.getElementById('priorityCheckbox');
 // Add event listener to the document
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const response = await fetch(
-      'https://task-manager-func-bmeinert.azurewebsites.net/api/getTasks'
-    );
+    // ✅ Use relative path so SWA proxy + auth apply
+    const response = await fetch('/api/getTasks');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -25,11 +24,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     todos = []; // Fallback to empty array
     displayTasks();
   }
+
   // Add event listener to the add button whenever it is clicked
   addButton.addEventListener('click', addTask);
   // Add event listener to the input field whenever a key is pressed
   tdInput.addEventListener('keydown', (event) => {
-    // If the key pressed is the enter key, call the addTask function
     if (event.key === 'Enter') {
       event.preventDefault();
       addTask();
@@ -48,20 +47,18 @@ const addTask = async () => {
   }
 
   try {
-    const response = await fetch(
-      'https://task-manager-func-bmeinert.azurewebsites.net/api/addTask',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: newTask,
-          priority: priorityCheckbox.checked,
-          createdDate: new Date().toISOString().split('T')[0],
-        }),
-      }
-    );
+    // ✅ Relative path
+    const response = await fetch('/api/addTask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: newTask,
+        priority: priorityCheckbox.checked,
+        createdDate: new Date().toISOString().split('T')[0],
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -102,16 +99,18 @@ const displayTasks = () => {
     const p = document.createElement('p');
     p.classList.add('todo');
     p.innerHTML = `
-            <div class="todoContainer">
-                <input type="checkbox" class="todoCheckbox" id="input-${index}" ${
+      <div class="todoContainer">
+        <input type="checkbox" class="todoCheckbox" id="input-${index}" ${
       item.disabled ? 'checked' : ''
     }>
-                <p id="todo-${index}" class="${
-      item.disabled ? 'disabled ' : ''
-    }${item.priority ? 'priorityTask' : ''}">${item.text}</p>
-                <img src="./images/delete.svg" alt="delete" class="deleteIcon">
-            </div>
-        `;
+        <p id="todo-${index}" class="${item.disabled ? 'disabled ' : ''}${
+      item.priority ? 'priorityTask' : ''
+    }">
+          ${item.text}
+        </p>
+        <img src="./images/delete.svg" alt="delete" class="deleteIcon">
+      </div>
+    `;
 
     p.querySelector('.todoCheckbox').addEventListener('change', () =>
       toggleTask(todos.indexOf(item))
@@ -127,16 +126,18 @@ const displayTasks = () => {
     const p = document.createElement('p');
     p.classList.add('todo');
     p.innerHTML = `
-            <div class="todoContainer">
-                <input type="checkbox" class="todoCheckbox" id="input-completed-${index}" ${
+      <div class="todoContainer">
+        <input type="checkbox" class="todoCheckbox" id="input-completed-${index}" ${
       item.disabled ? 'checked' : ''
     }>
-                <p id="todo-completed-${index}" class="${
+        <p id="todo-completed-${index}" class="${
       item.disabled ? 'disabled ' : ''
-    }${item.priority ? 'priorityTask' : ''}">${item.text}</p>
-                <img src="./images/delete.svg" alt="delete" class="deleteIcon">
-            </div>
-        `;
+    }${item.priority ? 'priorityTask' : ''}">
+          ${item.text}
+        </p>
+        <img src="./images/delete.svg" alt="delete" class="deleteIcon">
+      </div>
+    `;
 
     p.querySelector('.todoCheckbox').addEventListener('change', () =>
       toggleTask(todos.indexOf(item))
@@ -151,23 +152,21 @@ const displayTasks = () => {
   counter.textContent = activeTasks.length;
 };
 
-// Toggle task function to change the status of the task from disabled = false to disabled = true
+// Toggle task function to change the status of the task
 const toggleTask = async (index) => {
   try {
     const task = todos[index];
     const updatedDisabled = !task.disabled;
-    const response = await fetch(
-      `https://task-manager-func-bmeinert.azurewebsites.net/api/updateTask/${task.id}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          disabled: updatedDisabled,
-        }),
-      }
-    );
+    // ✅ Relative path
+    const response = await fetch(`/api/updateTask/${task.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        disabled: updatedDisabled,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -182,18 +181,17 @@ const toggleTask = async (index) => {
   }
 };
 
+// Delete a single task
 const deleteTask = async (index) => {
   try {
     const task = todos[index];
-    const response = await fetch(
-      `https://task-manager-func-bmeinert.azurewebsites.net/api/deleteTask/${task.id}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // ✅ Relative path
+    const response = await fetch(`/api/deleteTask/${task.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -207,18 +205,16 @@ const deleteTask = async (index) => {
   }
 };
 
-// Delete all tasks function
+// Delete all tasks
 const deleteAll = async () => {
   try {
-    const response = await fetch(
-      'https://task-manager-func-bmeinert.azurewebsites.net/api/deleteAllTasks',
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // ✅ Relative path
+    const response = await fetch('/api/deleteAllTasks', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
